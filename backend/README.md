@@ -1,6 +1,6 @@
 # Inkloom AI Backend
 
-Spring Boot REST API for the content submission and company review lifecycle. It stores submissions, product context, findings, reviewer feedback, decisions, events and prior versions in MongoDB.
+Spring Boot REST API for content submissions, company review and MongoDB persistence, protected with server-side role-based access checks.
 
 ## Requirements
 
@@ -8,23 +8,27 @@ Spring Boot REST API for the content submission and company review lifecycle. It
 - Maven 3.9+
 - MongoDB 8.x, or Docker with Docker Compose
 
-## Run with Docker Compose
+## Configure local credentials
 
-From the repository root:
+From the repository root, copy .env.example to .env and replace every sample password before starting the API. Do not commit .env. For direct Maven runs, export the four RBAC_*_PASSWORD environment variables in your shell.
+
+Default local usernames:
+- alexander.cross@demo.inkloom.test — Admin
+- elena.rostova@demo.inkloom.test — Brand Manager
+- marcus.vance@demo.inkloom.test — Content Creator
+- sarah.jenkins@demo.inkloom.test — Reviewer
+
+Passwords are not stored in source code. The API refuses to start if a required role password is missing.
+
+## Run with Docker Compose
 
     docker compose -f infra/docker-compose.yml up --build
 
-The API is available at http://localhost:8080. MongoDB is bound to localhost:27017. Check the API at http://localhost:8080/api/health.
+The API is bound to localhost:8080 and MongoDB to localhost:27017. Health is public at http://localhost:8080/api/health. Submission routes require HTTP Basic authentication.
 
-Stop services with Ctrl+C; to stop containers started in the background, use:
+## Run directly
 
-    docker compose -f infra/docker-compose.yml down
-
-MongoDB data stays in a named Docker volume. To remove the saved local database as well, use Docker Compose's \`down -v\` command.
-
-## Run the API directly
-
-Start MongoDB locally, then from the repository root:
+Start MongoDB, set the four RBAC_*_PASSWORD environment variables, then run from the repository root:
 
     cd backend
     mvn spring-boot:run
@@ -35,41 +39,16 @@ Run tests:
 
     mvn test
 
-## API routes
+## Role-protected routes
 
-- GET /api/health — service status
-- GET /api/submissions — list submissions; optional query parameters \`status\` and \`submittedBy\`
-- GET /api/submissions/{id} — fetch one submission
-- POST /api/submissions — create a submission and put it in the company review queue
-- POST /api/submissions/{id}/decisions — approve, reject, or request changes
-- POST /api/submissions/{id}/resubmit — archive the previous version and resubmit the revised draft
+- GET /api/health — public health status
+- GET /api/submissions and GET /api/submissions/{id} — authenticated roles; Content Creators only see submissions created under their authenticated username
+- POST /api/submissions — Admin, Brand Manager, Content Creator
+- POST /api/submissions/{id}/decisions — Admin and Reviewer can approve/reject/request changes; Brand Manager can only request changes
+- POST /api/submissions/{id}/resubmit — Admin, Brand Manager, Content Creator
 
-Example create request:
+The server uses the authenticated principal as the actor instead of trusting the actor's name in the request body. It rejects a second decision after a final decision has already been recorded.
 
-    {
-      "name": "NovaBook launch script",
-      "companyId": "northstar",
-      "companyName": "Northstar Devices",
-      "productId": "nova-book-pro",
-      "productName": "NovaBook Pro 14",
-      "model": "NBP-14",
-      "contentType": "Script / ad copy",
-      "content": "Example draft text",
-      "submittedBy": "Creator Name",
-      "submittedByEmail": "creator@example.test",
-      "findings": []
-    }
+## Important limits
 
-Example decision:
-
-    {
-      "decision": "Request changes",
-      "comment": "Please support this performance claim with an approved source.",
-      "reviewerName": "Company reviewer"
-    }
-
-A comment is required for a rejection or a request for changes. Only submissions awaiting company review can be decided; resubmission is allowed only from the Changes requested state. A resubmission archives the earlier version and increments the version number.
-
-## Current limitations
-
-This is a backend foundation for local development. It does not yet implement authentication, server-enforced roles, organization-level data isolation, rate limiting, AI verification or product-source management. Reviewer/creator names in request bodies are not authenticated identities. CORS is not authentication. The frontend does not yet call this API. Do not expose this service publicly or use real/confidential content until authentication and authorization are added.
+This is an initial server-side RBAC foundation using HTTP Basic and environment-configured in-memory accounts. It is not a production identity system. The team-management screen and workspace/guideline editor still update browser state only; they do not create persistent accounts, separate company data stores, or database-backed policies. Organization-level data isolation for Admins, Brand Managers and Reviewers is not yet implemented, and the React frontend is not connected to the protected API. Do not expose this API publicly until TLS, persistent identity management, organization-scoped authorization, rate limiting and credential rotation are in place. CORS is not an authorization boundary.
