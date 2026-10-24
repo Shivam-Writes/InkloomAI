@@ -1,5 +1,7 @@
 node_modules/
 dist/
+frontend/dist/
+backend/target/
 .env
 .env.*
 !.env.example
