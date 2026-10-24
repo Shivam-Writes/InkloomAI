@@ -41,7 +41,7 @@ public class SubmissionService {
                 .filter(item -> submittedBy == null || submittedBy.isBlank()
                         || (item.getSubmittedBy() != null
                         && item.getSubmittedBy().toLowerCase(Locale.ROOT)
-                                .contains(submittedBy.trim().toLowerCase(Locale.ROOT))))
+                                .equalsIgnoreCase(submittedBy.trim())))
                 .toList();
     }
 
