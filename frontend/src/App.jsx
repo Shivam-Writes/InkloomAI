@@ -84,7 +84,21 @@ export default function App(){
  const notify=x=>{T(x);setTimeout(()=>T(''),2600)};
  const signInWithEmail=(loginEmail,remember)=>{const clean=(loginEmail||'').trim();if(!clean)return notify('Enter your corporate email to continue.');const inferredName=displayName.trim()||clean.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,char=>char.toUpperCase());SetDisplayName(inferredName);SetEmail(clean);SetWorkspaceName('Meridian Stackworks');SelectCompany('meridian-stackworks');CompanyFilter('meridian-stackworks');SelectProduct('nova-book-pro');SignIn(true);P('Overview');notify('Demo workspace opened. Credentials are not verified by a server.');};
  const quickRoleLogin=(selected,person,loginEmail)=>{Role(selected);SetDisplayName(person);SetEmail(loginEmail);SetWorkspaceName('Meridian Stackworks');SelectCompany('meridian-stackworks');CompanyFilter('meridian-stackworks');SelectProduct('nova-book-pro');SignIn(true);P('Overview');notify('Opened the '+person+' demo account. No real authentication was performed.');};
- if(!signedIn)return <DemoSignIn selectedRole={role} email={email} onEmailChange={SetEmail} onSignIn={signInWithEmail} onQuickLogin={quickRoleLogin} onNotice={notify}/>;
+ if(!signedIn)return <DemoSignIn selectedRole={role} email={email} onEmailChange={SetEmail} onSignIn={signInWithEmail} onQuickLogin={quickRoleLogin} onNotice={notify}/>
+ const roleInfo=roleOptions.find(item=>item.id===role)||roleOptions[0];
+ const currentMember=teamMembers.find(member=>member.email?.toLowerCase()===email.toLowerCase())||teamMembers.find(member=>member.role===role)||seedTeamMembers.find(member=>member.role===role)||null;
+ const permittedCompanyIds=role==='admin'?companies.map(company=>company.id):(currentMember?.assignedCompanyIds||[]);
+ const accessibleCompanies=companies.filter(company=>permittedCompanyIds.includes(company.id));
+ const accessibleCompanyIds=accessibleCompanies.map(company=>company.id);
+ const activeWorkspace=accessibleCompanies.find(item=>item.name===workspaceName)||accessibleCompanies[0]||null;
+ const navItems=(navigationByRole[role]||navigationByRole.creator).filter(([,target])=>canAccessPage(role,target));
+ const selectedCompany=accessibleCompanies.find(company=>company.id===selectedCompanyId)||accessibleCompanies[0]||null;
+ const activeProducts=demoProducts.filter(product=>activeWorkspace&&accessibleCompanyIds.includes(product.companyId)&&product.companyId===activeWorkspace.id);
+ const selectedProduct=activeProducts.find(product=>product.id===selectedProductId)||activeProducts[0]||null;
+ const visibleCompanies=accessibleCompanies.filter(company=>(company.name+' '+company.sector+' '+company.description).toLowerCase().includes(companyQuery.toLowerCase()));
+ const visibleProducts=activeProducts.filter(product=>(product.name+' '+product.company+' '+product.model+' '+product.category).toLowerCase().includes(productQuery.toLowerCase()));
+ const initials=(displayName.trim()||'User').split(/\s+/).slice(0,2).map(part=>part[0]?.toUpperCase()||'').join('');
+;
  const decide=(id,decision)=>{if(!canPerform(role,'editIntentLock'))return notify('Your role can view findings but cannot apply Intent Lock fixes.');F(a=>a.map(f=>f.id===id?{...f,state:decision}:f));D(a=>[{id,decision,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...a]);notify('Finding decision updated in this prototype session.');};
  const timeLabel=()=>new Date().toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
  const submissionTone=status=>status==='Approved'?'green':status==='Rejected'?'rejected':status==='Changes requested'?'blue':status==='Resubmitted for review'?'purple':'amber';
@@ -154,21 +168,6 @@ export default function App(){
  };
  const selected=findings.find(f=>f.id===picked)||findings[0];
  const pillTone=state=>state==='Approved'?'green':state==='Rejected'?'rejected':state==='Changes requested'?'blue':state==='Resubmitted for review'?'purple':'amber';
- const roleInfo=roleOptions.find(item=>item.id===role)||roleOptions[0];
- const currentMember=teamMembers.find(member=>member.email?.toLowerCase()===email.toLowerCase())||teamMembers.find(member=>member.role===role)||seedTeamMembers.find(member=>member.role===role)||null;
- const permittedCompanyIds=role==='admin'?companies.map(company=>company.id):(currentMember?.assignedCompanyIds||[]);
- const accessibleCompanies=companies.filter(company=>permittedCompanyIds.includes(company.id));
- const accessibleCompanyIds=accessibleCompanies.map(company=>company.id);
- const activeWorkspace=accessibleCompanies.find(item=>item.name===workspaceName)||accessibleCompanies[0]||null;
- const navItems=(navigationByRole[role]||navigationByRole.creator).filter(([,target])=>canAccessPage(role,target));
- const selectedCompany=accessibleCompanies.find(company=>company.id===selectedCompanyId)||accessibleCompanies[0]||null;
- const activeProducts=demoProducts.filter(product=>activeWorkspace&&accessibleCompanyIds.includes(product.companyId)&&product.companyId===activeWorkspace.id);
- const selectedProduct=activeProducts.find(product=>product.id===selectedProductId)||activeProducts[0]||null;
- const visibleCompanies=accessibleCompanies.filter(company=>(company.name+' '+company.sector+' '+company.description).toLowerCase().includes(companyQuery.toLowerCase()));
- const visibleProducts=activeProducts.filter(product=>(product.name+' '+product.company+' '+product.model+' '+product.category).toLowerCase().includes(productQuery.toLowerCase()));
- const initials=(displayName.trim()||'User').split(/\s+/).slice(0,2).map(part=>part[0]?.toUpperCase()||'').join('');
- 
- 
  const leaveWorkspace=()=>{SignIn(false);P('Overview');Role('creator');SetWorkspaceName('Meridian Stackworks');SelectCompany('meridian-stackworks');CompanyFilter('meridian-stackworks');SelectProduct('nova-book-pro');SetWorkspaceMenuOpen(false);R(false);notify('You left the demo workspace.');};
  const openCount=findings.filter(f=>f.state==='Needs review').length;
  const highCount=findings.filter(f=>f.sev==='High').length;
