@@ -75,7 +75,7 @@ export default function App(){
  const submissionTone=status=>status==='Approved'?'green':status==='Rejected'?'rejected':status==='Changes requested'?'blue':status==='Resubmitted for review'?'purple':'amber';
  const reviewQueue=submissions.filter(item=>item.status==='Awaiting company review'||item.status==='Resubmitted for review');
  const reviewerVisibleSubmissions=approvalFilter==='Pending'?reviewQueue:submissions;
- const selectedSubmission=submissions.find(item=>item.id===selectedSubmissionId)||reviewerVisibleSubmissions[0]||null;
+ const selectedSubmission=reviewerVisibleSubmissions.find(item=>item.id===selectedSubmissionId)||reviewerVisibleSubmissions[0]||null;
  const mySubmissionList=submissions.filter(item=>item.demo||item.submittedBy===displayName);
  const selectedMySubmission=mySubmissionList.find(item=>item.id===selectedMySubmissionId)||mySubmissionList[0]||null;
  const submitForReview=()=>{
