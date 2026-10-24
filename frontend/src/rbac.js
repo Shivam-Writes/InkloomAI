@@ -43,6 +43,7 @@ export function isHeatmapReadOnly(role) {
 export function canAccessPage(role, page) {
   const key = canonicalRole(role);
   if (page === 'Team Management' || page === 'Settings') return key === 'ADMIN';
+  if (page === 'Brand Guidelines') return ['ADMIN', 'BRAND_MANAGER'].includes(key);
   if (page === 'Brand knowledge') return ['ADMIN', 'BRAND_MANAGER', 'CONTENT_CREATOR', 'REVIEWER'].includes(key);
   if (page === 'Companies' || page === 'Products' || page === 'Overview') return true;
   if (page === 'Content review') return canPerform(key, 'submitContent');
