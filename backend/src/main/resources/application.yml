@@ -20,6 +20,20 @@ management:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,https://inkloom-ai-eight.vercel.app}
+  security:
+    users:
+      admin:
+        username: ${RBAC_ADMIN_USERNAME:alexander.cross@demo.inkloom.test}
+        password: ${RBAC_ADMIN_PASSWORD:}
+      brand-manager:
+        username: ${RBAC_BRAND_MANAGER_USERNAME:elena.rostova@demo.inkloom.test}
+        password: ${RBAC_BRAND_MANAGER_PASSWORD:}
+      content-creator:
+        username: ${RBAC_CONTENT_CREATOR_USERNAME:marcus.vance@demo.inkloom.test}
+        password: ${RBAC_CONTENT_CREATOR_PASSWORD:}
+      reviewer:
+        username: ${RBAC_REVIEWER_USERNAME:sarah.jenkins@demo.inkloom.test}
+        password: ${RBAC_REVIEWER_PASSWORD:}
 
 info:
   app:
