@@ -1,16 +1,53 @@
 # Inkloom AI
 
-A React + Vite UI prototype for reviewing content against brand guidelines and managing review decisions.
+Brand-governance prototype for reviewing content against approved product facts and guidelines.
 
-## Run locally
+## Repository layout
+
+```text
+InkloomAI/
+├── frontend/          # React + Vite application
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── styles.css
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── backend/            # Reserved for the Spring Boot API
+├── infra/              # Deployment and infrastructure resources
+├── .gitignore
+├── README.md
+└── vercel.json
+```
+
+## Run the frontend locally
+
+Open a terminal at the repository root:
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Vite prints the local URL when the development server starts (usually `http://localhost:5173`).
+Vite prints the local development URL (usually `http://localhost:5173`).
 
-## Current scope
+To create a production build locally:
 
-This commit contains the frontend prototype. Review findings are sample data, and source/approval changes are held in local React state. PDF text extraction, AI analysis, persistence, authentication, and the Spring Boot/MongoDB backend are not wired up yet.
+```bash
+npm run build
+npm run preview
+```
+
+## Deployment
+
+Vercel is configured at the repository root to install dependencies from `frontend/`, run the frontend production build, and publish `frontend/dist`.
+
+## Current implementation status
+
+- The frontend includes a role-selection demo sign-in, company and product catalogue screens, content-review UI and approval UI.
+- Company names, products, product facts, submissions and review results are illustrative sample data.
+- The role selector is not authentication. Server-side authorization, real company-owned sources, AI verification and persistent database records are not connected yet.
+- `backend/` is currently a placeholder for the planned Spring Boot REST API. Java backend source and a backend `pom.xml` have not been added to this repository yet.
+- `infra/` is reserved for deployment and infrastructure configuration.
