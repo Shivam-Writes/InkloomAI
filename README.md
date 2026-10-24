@@ -5,14 +5,11 @@ Brand-governance product prototype for reviewing content against approved produc
 ## Repository layout
 
     InkloomAI/
-    ├── frontend/          React + Vite application
-    │   └── src/           App.jsx, main.jsx and styles.css
-    ├── backend/           Spring Boot REST API and MongoDB persistence
-    │   ├── pom.xml
-    │   └── src/main/java/
-    ├── infra/              Local Docker Compose configuration
-    ├── .github/workflows/  Backend test workflow
-    └── vercel.json         Vercel builds frontend/ only
+    ├── frontend/          React + Vite app and role-aware UI
+    ├── backend/           Spring Boot REST API with server-side role checks
+    ├── infra/             Local Docker Compose configuration
+    ├── .github/workflows/ Frontend build and backend test checks
+    └── vercel.json        Vercel builds frontend/ only
 
 ## Run the frontend
 
@@ -20,40 +17,34 @@ Brand-governance product prototype for reviewing content against approved produc
     npm install
     npm run dev
 
-Vite prints the local development URL, usually http://localhost:5173.
+The frontend uses demo login shortcuts. UI role rules control what the demo session can see, but they are not identity authentication.
 
 ## Run the backend and MongoDB
 
-From the repository root, with Docker Desktop and Docker Compose installed:
+1. Copy .env.example to .env and replace every sample password.
+2. From the repository root, run:
 
-    docker compose -f infra/docker-compose.yml up --build
+       docker compose -f infra/docker-compose.yml up --build
 
-The API is bound to localhost:8080 and MongoDB to localhost:27017. Check the API at http://localhost:8080/api/health.
+3. Check the public health route at http://localhost:8080/api/health.
 
-To run the backend without Docker, start MongoDB locally, then:
+The backend requires JDK 17 and Maven 3.9+. See backend/README.md for direct-run instructions, local role accounts and endpoint permissions.
 
-    cd backend
-    mvn spring-boot:run
+## Role access control
 
-The backend needs JDK 17 and Maven 3.9+. See backend/README.md for routes, request examples and limitations.
+- Admin: manage users/roles in the demo UI, workspaces, guidelines/sources, submit/fix content, and make final decisions.
+- Brand Manager: manage demo workspaces, guidelines/sources, submit/fix content, and request changes; cannot approve or reject.
+- Content Creator: submit content, apply fixes and revisions, view findings and use Clarity Heatmap signals as view-only.
+- Reviewer: view findings, request changes, approve/reject; Clarity Heatmap is view-only.
 
-## Backend API currently available
+The permission matrix is in Team Management (Admin demo role). The same policy map drives frontend navigation and action visibility. Demo member/workspace/policy edits remain browser state and are not persisted.
 
-- GET /api/health
-- GET /api/submissions (optional status and submittedBy filters)
-- GET /api/submissions/{id}
-- POST /api/submissions
-- POST /api/submissions/{id}/decisions
-- POST /api/submissions/{id}/resubmit
+## Backend authorization
+
+The Spring Boot API now requires HTTP Basic authentication for submission endpoints and applies method-level role checks. Role passwords come from environment variables and must not be committed. Content Creators can list or retrieve only submissions created by their authenticated username.
+
+Important: this is an initial RBAC foundation, not a finished multi-tenant identity system. Admin, Brand Manager and Reviewer records are not isolated by organization yet; persistent account management and frontend-to-backend authentication are still pending. Do not expose the API publicly or use confidential company content until organization-level authorization, TLS, password rotation and production identity management are implemented.
 
 ## Deployment
 
-Vercel builds the frontend from frontend/ and publishes frontend/dist. The Spring Boot API is separate and is not deployed by Vercel; it currently has local Docker Compose support.
-
-## Current status and security
-
-- The frontend has role-selection demo sign-in, company/product catalogue, local product-specific phrase checks, creator submissions and a company review panel.
-- The backend now persists submission drafts, findings, decisions, comments, events and revision history in MongoDB.
-- The frontend is **not connected to the backend yet**. The current website still uses browser memory for its workflow.
-- The demo role selector is not real authentication. The backend does not yet enforce identity, role authorization or company-level data isolation. Do not expose the API publicly or use it with confidential content before those protections are implemented.
-- Product records and claim facts are illustrative data. Local phrase checks are not AI verification or a compliance determination.
+Vercel deploys the frontend only. The Spring Boot API and MongoDB must be run/deployed separately.
