@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {ShieldCheck,LayoutDashboard,BookOpen,FileSearch,ClipboardCheck,ChartNoAxesCombined,Settings,Search,Bell,Plus,ArrowRight,ArrowUpRight,FileText,AlertTriangle,Clock3,CheckCircle2,LockKeyhole,Sparkles,Upload,Quote,Check,X,Pencil,ChevronDown,Info,History,Database,SlidersHorizontal,Eye,FileUp,UserRound,Building2,Users,LogOut,Mail} from 'lucide-react';
+import {ShieldCheck,LayoutDashboard,BookOpen,FileSearch,ClipboardCheck,ChartNoAxesCombined,Settings,Search,Bell,Plus,ArrowRight,ArrowUpRight,FileText,AlertTriangle,Clock3,CheckCircle2,LockKeyhole,Sparkles,Upload,Quote,Check,X,Pencil,ChevronDown,Info,History,Database,SlidersHorizontal,Eye,FileUp,UserRound,Building2,Users,LogOut,Mail,Send,MessageSquare,RefreshCw,ClipboardList} from 'lucide-react';
 const seedSources=[{id:1,name:'Brand voice & messaging guide',type:'Guideline',desc:'Tone, terminology and writing principles',status:'Approved',date:'Today',color:'teal'},{id:2,name:'Product facts — Q4 2026',type:'Product facts',desc:'Verified product, privacy and security claims',status:'Approved',date:'Yesterday',color:'blue'},{id:3,name:'Approved terminology',type:'Terminology',desc:'Preferred terms and restricted phrases',status:'Approved',date:'Oct 18, 2026',color:'purple'}];
 const demoCompanies=[
  {id:'northstar',name:'Northstar Devices',sector:'Consumer technology',domain:'northstar.example',status:'Demo company',description:'Illustrative consumer technology company used to demonstrate how approved product facts and claims are organised.',owner:'Brand governance team',sourceCount:3},
@@ -55,15 +55,65 @@ const navigationByRole={
  reviewer:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Approvals','Approvals',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined]],
  admin:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck],['Approvals','Approvals',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined],['Settings','Settings',Settings]]
 };
-const sampleSubmissions=[
- {id:'INK-024',name:'Q4 product launch script',product:'Product campaign · Draft v2',date:'Today, 10:42 AM',status:'Awaiting company review',tone:'amber'},
- {id:'INK-021',name:'Website product description',product:'Website copy · Draft v3',date:'Yesterday',status:'Changes requested',tone:'blue'},
- {id:'INK-018',name:'Autumn social campaign',product:'Social content · Draft v1',date:'Oct 20, 2026',status:'Approved',tone:'green'}
-];
+const sampleSubmissions=(()=>{
+ const make=(details)=>{
+  const product=demoProducts.find(item=>item.id===details.productId)||demoProducts[0];
+  const findings=checkDraft(details.content,product).map(f=>({...f,state:details.status==='Approved'?'Approved':'Needs review'}));
+  return {...details,product:product.company+' · '+product.name,company:product.company,model:product.model,version:details.version||1,tone:details.status==='Approved'?'green':details.status==='Changes requested'?'blue':details.status==='Rejected'?'rejected':'amber',date:details.date||'Today',updatedAt:details.date||'Today',findings,events:details.events||[],revisions:details.revisions||[],demo:true};
+ };
+ return [
+  make({id:'INK-024',name:'Q4 product launch script',productId:'nova-book-pro',contentType:'Script / ad copy',content:'Our laptop is 100% secure. It offers guaranteed 24-hour battery life and is the fastest laptop on the market.',status:'Awaiting company review',submittedBy:'Aarav Sharma',submittedByEmail:'aarav@example.test',date:'Today, 10:42 AM',events:[{actor:'Aarav Sharma',role:'creator',action:'Submitted for company review',comment:'Please review the product claims in this launch script.',at:'Today, 10:42 AM'}]}),
+  make({id:'INK-021',name:'Website product description',productId:'pulse-buds',contentType:'Website copy',content:'Pulse Buds deliver 24 hours on one charge and guarantee complete silence in every environment.',status:'Changes requested',submittedBy:'Maya Patel',submittedByEmail:'maya@example.test',date:'Yesterday',feedback:'Please separate the per-charge playback figure from total playback with the charging case. Remove absolute performance promises unless supported by approved evidence.',events:[{actor:'Maya Patel',role:'creator',action:'Submitted for company review',comment:'Updated website copy.',at:'Oct 24, 2026, 3:15 PM'},{actor:'Brand review team',role:'reviewer',action:'Requested changes',comment:'Please separate the per-charge playback figure from total playback with the charging case. Remove absolute performance promises unless supported by approved evidence.',at:'Yesterday'}]}),
+  make({id:'INK-018',name:'Autumn smart-home campaign',productId:'aster-hub',contentType:'Social post',content:'The Aster Smart Hub supports Matter-compatible devices and works with every smart-home device.',status:'Approved',submittedBy:'Jordan Lee',submittedByEmail:'jordan@example.test',date:'Oct 20, 2026',events:[{actor:'Jordan Lee',role:'creator',action:'Submitted for company review',comment:'Autumn campaign copy for review.',at:'Oct 20, 2026'},{actor:'Brand review team',role:'reviewer',action:'Approved',comment:'Approved for the specified product scope. Confirm all published claims against the current authorised source.',at:'Oct 20, 2026'}]})
+ ];
+})();
 export default function App(){
- const [page,P]=useState('Overview'),[sources,S]=useState(seedSources),[findings,F]=useState(seedFindings),[content,C]=useState(''),[ran,R]=useState(false),[picked,Pick]=useState(1),[toast,T]=useState(''),[modal,M]=useState(false),[sourceName,SN]=useState(''),[sourceType,ST]=useState('Guideline'),[filter,Filter]=useState('All'),[decisions,D]=useState([]),[file,File]=useState(''),[query,Q]=useState(''),[signedIn,SignIn]=useState(false),[role,Role]=useState('creator'),[displayName,SetDisplayName]=useState(''),[email,SetEmail]=useState(''),[companyQuery,CompanyQuery]=useState(''),[productQuery,ProductQuery]=useState(''),[companyFilter,CompanyFilter]=useState('All'),[selectedCompanyId,SelectCompany]=useState('northstar'),[selectedProductId,SelectProduct]=useState('nova-book-pro'),[contentType,SetContentType]=useState('Script / ad copy');
+ const [page,P]=useState('Overview'),[sources,S]=useState(seedSources),[findings,F]=useState(seedFindings),[content,C]=useState(''),[ran,R]=useState(false),[picked,Pick]=useState(1),[toast,T]=useState(''),[modal,M]=useState(false),[sourceName,SN]=useState(''),[sourceType,ST]=useState('Guideline'),[filter,Filter]=useState('All'),[decisions,D]=useState([]),[file,File]=useState(''),[query,Q]=useState(''),[signedIn,SignIn]=useState(false),[role,Role]=useState('creator'),[displayName,SetDisplayName]=useState(''),[email,SetEmail]=useState(''),[companyQuery,CompanyQuery]=useState(''),[productQuery,ProductQuery]=useState(''),[companyFilter,CompanyFilter]=useState('All'),[selectedCompanyId,SelectCompany]=useState('northstar'),[selectedProductId,SelectProduct]=useState('nova-book-pro'),[contentType,SetContentType]=useState('Script / ad copy'),[submissions,SetSubmissions]=useState(sampleSubmissions),[selectedSubmissionId,SelectSubmission]=useState('INK-024'),[selectedMySubmissionId,SelectMySubmission]=useState('INK-021'),[reviewComment,SetReviewComment]=useState(''),[editingSubmissionId,SetEditingSubmissionId]=useState(null),[approvalFilter,SetApprovalFilter]=useState('Pending');
  const notify=x=>{T(x);setTimeout(()=>T(''),2600)};
- const decide=(id,decision)=>{F(a=>a.map(f=>f.id===id?{...f,state:decision}:f));D(a=>[{id,decision,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...a]);notify('Decision updated in this prototype session.');};
+ const decide=(id,decision)=>{F(a=>a.map(f=>f.id===id?{...f,state:decision}:f));D(a=>[{id,decision,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...a]);notify('Finding decision updated in this prototype session.');};
+ const timeLabel=()=>new Date().toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ const submissionTone=status=>status==='Approved'?'green':status==='Rejected'?'rejected':status==='Changes requested'?'blue':status==='Resubmitted for review'?'purple':'amber';
+ const reviewQueue=submissions.filter(item=>item.status==='Awaiting company review'||item.status==='Resubmitted for review');
+ const reviewerVisibleSubmissions=approvalFilter==='Pending'?reviewQueue:submissions;
+ const selectedSubmission=submissions.find(item=>item.id===selectedSubmissionId)||reviewerVisibleSubmissions[0]||null;
+ const mySubmissionList=submissions.filter(item=>item.demo||item.submittedBy===displayName);
+ const selectedMySubmission=mySubmissionList.find(item=>item.id===selectedMySubmissionId)||mySubmissionList[0]||null;
+ const submitForReview=()=>{
+  if(file)return notify('Please paste the draft text before submitting; document text extraction is not connected yet.');
+  if(!content.trim())return notify('Paste the draft text first.');
+  if(!ran)return notify('Run the product review before submitting to the company.');
+  const now=timeLabel();
+  const reviewFindings=findings.map(f=>({...f,state:'Needs review',productName:f.productName||selectedProduct.name,companyName:f.companyName||selectedProduct.company}));
+  if(editingSubmissionId){
+   const existing=submissions.find(item=>item.id===editingSubmissionId);
+   if(!existing){SetEditingSubmissionId(null);return notify('The draft to revise could not be found. Start a new submission.');}
+   const nextVersion=(existing.version||1)+1;
+   const previousVersion={version:existing.version||1,content:existing.content,findings:existing.findings,status:existing.status,updatedAt:existing.updatedAt,feedback:existing.feedback||''};
+   SetSubmissions(items=>items.map(item=>item.id===editingSubmissionId?{...item,productId:selectedProduct.id,product:selectedProduct.company+' · '+selectedProduct.name,company:selectedProduct.company,companyId:selectedProduct.companyId,model:selectedProduct.model,contentType,content,findings:reviewFindings,version:nextVersion,status:'Resubmitted for review',tone:'purple',date:now,updatedAt:now,feedback:'',revisions:[...(item.revisions||[]),previousVersion],events:[...(item.events||[]),{actor:displayName||'Demo creator',role:'creator',action:'Resubmitted for company review (v'+nextVersion+')',comment:'Updated content was checked with the product demo rules before resubmission.',at:now}]}:item));
+   SelectMySubmission(editingSubmissionId);SelectSubmission(editingSubmissionId);SetEditingSubmissionId(null);SetReviewComment('');P('My submissions');notify('Revised version sent back to the company review queue.');
+   return;
+  }
+  const id='INK-'+String(Date.now()).slice(-6);
+  const newSubmission={id,name:selectedProduct.name+' — '+contentType,productId:selectedProduct.id,product:selectedProduct.company+' · '+selectedProduct.name,company:selectedProduct.company,companyId:selectedProduct.companyId,model:selectedProduct.model,contentType,content,findings:reviewFindings,version:1,status:'Awaiting company review',tone:'amber',submittedBy:displayName||'Demo creator',submittedByEmail:email||'',date:now,updatedAt:now,feedback:'',events:[{actor:displayName||'Demo creator',role:'creator',action:'Submitted for company review',comment:'Review requested for '+selectedProduct.name+'.',at:now}],revisions:[],demo:false};
+  SetSubmissions(items=>[newSubmission,...items]);SelectMySubmission(id);SelectSubmission(id);SetReviewComment('');P('My submissions');notify('Submission sent to the company review queue.');
+ };
+ const reviewSubmissionDecision=(id,decision)=>{
+  const target=submissions.find(item=>item.id===id);
+  if(!target)return notify('Choose a submission from the review queue first.');
+  const comment=reviewComment.trim();
+  if((decision==='Request changes'||decision==='Rejected')&&!comment)return notify('Add a reviewer comment before requesting changes or rejecting a submission.');
+  const status=decision==='Approve'?'Approved':decision==='Request changes'?'Changes requested':'Rejected';
+  const now=timeLabel();
+  const event={actor:displayName||'Company reviewer',role:'reviewer',action:decision==='Approve'?'Approved submission':decision==='Request changes'?'Requested changes':'Rejected submission',comment:comment||'Reviewed against the available demo product facts.',at:now};
+  SetSubmissions(items=>items.map(item=>item.id===id?{...item,status,tone:submissionTone(status),feedback:comment||'Approved by company reviewer.',updatedAt:now,date:now,events:[...(item.events||[]),event]}:item));
+  SetReviewComment('');
+  notify(decision==='Approve'?'Submission approved.':decision==='Request changes'?'Changes requested; feedback is visible to the creator.':'Submission rejected.');
+ };
+ const startRevision=submission=>{
+  if(submission.status!=='Changes requested')return notify('Only submissions with requested changes can be revised in this demo.');
+  C(submission.content);SelectProduct(submission.productId);SetContentType(submission.contentType);SetEditingSubmissionId(submission.id);F([]);D([]);Pick(0);R(false);File('');P('Content review');notify('Revision opened. Update the draft, rerun checks, then resubmit.');
+ };
+
  const run=()=>{
   if(file)return notify('File text extraction is not connected yet. Switch to Paste text and paste the draft to run the demo checks.');
   if(!content.trim())return notify('Paste some content first.');
@@ -75,7 +125,7 @@ export default function App(){
   notify(matched.length?matched.length+' finding'+(matched.length===1?'':'s')+' found for '+selectedProduct.name+'. Review the product evidence manually.':'No demo rules matched for '+selectedProduct.name+'. This is not a complete compliance check.');
  };
  const selected=findings.find(f=>f.id===picked)||findings[0];
- const pillTone=state=>state==='Approved'?'green':state==='Rejected'?'rejected':'amber';
+ const pillTone=state=>state==='Approved'?'green':state==='Rejected'?'rejected':state==='Changes requested'?'blue':state==='Resubmitted for review'?'purple':'amber';
  const roleInfo=roleOptions.find(item=>item.id===role)||roleOptions[0];
  const navItems=navigationByRole[role]||navigationByRole.creator;
  const selectedCompany=demoCompanies.find(company=>company.id===selectedCompanyId)||demoCompanies[0];
