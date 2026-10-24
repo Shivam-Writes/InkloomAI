@@ -31,7 +31,7 @@ const roleOptions=[
  {id:'admin',label:'Workspace admin',description:'Manage workspace settings and governance activity.',icon:Settings}
 ];
 const navigationByRole={
- creator:[['Overview','Overview',LayoutDashboard],['Products','Products',Database],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck]],
+ creator:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck]],
  agency:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined]],
  reviewer:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Approvals','Approvals',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined]],
  admin:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck],['Approvals','Approvals',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined],['Settings','Settings',Settings]]
