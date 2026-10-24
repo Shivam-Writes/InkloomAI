@@ -1,53 +1,59 @@
 # Inkloom AI
 
-Brand-governance prototype for reviewing content against approved product facts and guidelines.
+Brand-governance product prototype for reviewing content against approved product facts and guidelines.
 
 ## Repository layout
 
-```text
-InkloomAI/
-├── frontend/          # React + Vite application
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
-├── backend/            # Reserved for the Spring Boot API
-├── infra/              # Deployment and infrastructure resources
-├── .gitignore
-├── README.md
-└── vercel.json
-```
+    InkloomAI/
+    ├── frontend/          React + Vite application
+    │   └── src/           App.jsx, main.jsx and styles.css
+    ├── backend/           Spring Boot REST API and MongoDB persistence
+    │   ├── pom.xml
+    │   └── src/main/java/
+    ├── infra/              Local Docker Compose configuration
+    ├── .github/workflows/  Backend test workflow
+    └── vercel.json         Vercel builds frontend/ only
 
-## Run the frontend locally
+## Run the frontend
 
-Open a terminal at the repository root:
+    cd frontend
+    npm install
+    npm run dev
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Vite prints the local development URL, usually http://localhost:5173.
 
-Vite prints the local development URL (usually `http://localhost:5173`).
+## Run the backend and MongoDB
 
-To create a production build locally:
+From the repository root, with Docker Desktop and Docker Compose installed:
 
-```bash
-npm run build
-npm run preview
-```
+    docker compose -f infra/docker-compose.yml up --build
+
+The API is bound to localhost:8080 and MongoDB to localhost:27017. Check the API at http://localhost:8080/api/health.
+
+To run the backend without Docker, start MongoDB locally, then:
+
+    cd backend
+    mvn spring-boot:run
+
+The backend needs JDK 17 and Maven 3.9+. See backend/README.md for routes, request examples and limitations.
+
+## Backend API currently available
+
+- GET /api/health
+- GET /api/submissions (optional status and submittedBy filters)
+- GET /api/submissions/{id}
+- POST /api/submissions
+- POST /api/submissions/{id}/decisions
+- POST /api/submissions/{id}/resubmit
 
 ## Deployment
 
-Vercel is configured at the repository root to install dependencies from `frontend/`, run the frontend production build, and publish `frontend/dist`.
+Vercel builds the frontend from frontend/ and publishes frontend/dist. The Spring Boot API is separate and is not deployed by Vercel; it currently has local Docker Compose support.
 
-## Current implementation status
+## Current status and security
 
-- The frontend includes a role-selection demo sign-in, company and product catalogue screens, content-review UI and approval UI.
-- Company names, products, product facts, submissions and review results are illustrative sample data.
-- The role selector is not authentication. Server-side authorization, real company-owned sources, AI verification and persistent database records are not connected yet.
-- `backend/` is currently a placeholder for the planned Spring Boot REST API. Java backend source and a backend `pom.xml` have not been added to this repository yet.
-- `infra/` is reserved for deployment and infrastructure configuration.
+- The frontend has role-selection demo sign-in, company/product catalogue, local product-specific phrase checks, creator submissions and a company review panel.
+- The backend now persists submission drafts, findings, decisions, comments, events and revision history in MongoDB.
+- The frontend is **not connected to the backend yet**. The current website still uses browser memory for its workflow.
+- The demo role selector is not real authentication. The backend does not yet enforce identity, role authorization or company-level data isolation. Do not expose the API publicly or use it with confidential content before those protections are implemented.
+- Product records and claim facts are illustrative data. Local phrase checks are not AI verification or a compliance determination.
