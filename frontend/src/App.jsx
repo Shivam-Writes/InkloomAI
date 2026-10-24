@@ -49,6 +49,14 @@ const roleOptions=[
  {id:'reviewer',label:'Company reviewer',description:'Review claims and record company decisions.',icon:ShieldCheck},
  {id:'admin',label:'Workspace admin',description:'Manage workspace settings and governance activity.',icon:Settings}
 ];
+const demoWorkspaces=[
+ {id:'acme-enterprise',name:'Acme Enterprise Solutions',industry:'Enterprise B2B software',initials:'AE'},
+ {id:'pan',name:'PAN',industry:'Sample workspace',initials:'PA'},
+ {id:'softvision',name:'Softvision',industry:'Digital product engineering',initials:'SV'},
+ {id:'acme-health',name:'Acme Health & Life Sciences',industry:'Healthcare and life sciences',initials:'AH'},
+ {id:'nexus',name:'Nexus Omnichannel Commerce',industry:'Retail and commerce',initials:'NC'},
+ {id:'acme',name:'Acme',industry:'Sample enterprise',initials:'AC'}
+];
 const navigationByRole={
  creator:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck]],
  agency:[['Overview','Overview',LayoutDashboard],['Companies','Companies',Building2],['Products','Products',Database],['Brand knowledge','Brand knowledge',BookOpen],['Content review','Content review',FileSearch],['My submissions','My submissions',ClipboardCheck],['Insights','Insights',ChartNoAxesCombined]],
@@ -68,7 +76,7 @@ const sampleSubmissions=(()=>{
  ];
 })();
 export default function App(){
- const [page,P]=useState('Overview'),[sources,S]=useState(seedSources),[findings,F]=useState(seedFindings),[content,C]=useState(''),[ran,R]=useState(false),[picked,Pick]=useState(1),[toast,T]=useState(''),[modal,M]=useState(false),[sourceName,SN]=useState(''),[sourceType,ST]=useState('Guideline'),[filter,Filter]=useState('All'),[decisions,D]=useState([]),[file,File]=useState(''),[query,Q]=useState(''),[signedIn,SignIn]=useState(false),[role,Role]=useState('creator'),[displayName,SetDisplayName]=useState(''),[email,SetEmail]=useState(''),[companyQuery,CompanyQuery]=useState(''),[productQuery,ProductQuery]=useState(''),[companyFilter,CompanyFilter]=useState('All'),[selectedCompanyId,SelectCompany]=useState('northstar'),[selectedProductId,SelectProduct]=useState('nova-book-pro'),[contentType,SetContentType]=useState('Script / ad copy'),[submissions,SetSubmissions]=useState(sampleSubmissions),[selectedSubmissionId,SelectSubmission]=useState('INK-024'),[selectedMySubmissionId,SelectMySubmission]=useState('INK-021'),[reviewComment,SetReviewComment]=useState(''),[editingSubmissionId,SetEditingSubmissionId]=useState(null),[approvalFilter,SetApprovalFilter]=useState('Pending');
+ const [page,P]=useState('Overview'),[sources,S]=useState(seedSources),[findings,F]=useState(seedFindings),[content,C]=useState(''),[ran,R]=useState(false),[picked,Pick]=useState(1),[toast,T]=useState(''),[modal,M]=useState(false),[sourceName,SN]=useState(''),[sourceType,ST]=useState('Guideline'),[filter,Filter]=useState('All'),[decisions,D]=useState([]),[file,File]=useState(''),[query,Q]=useState(''),[signedIn,SignIn]=useState(false),[role,Role]=useState('creator'),[displayName,SetDisplayName]=useState(''),[email,SetEmail]=useState(''),[companyQuery,CompanyQuery]=useState(''),[productQuery,ProductQuery]=useState(''),[companyFilter,CompanyFilter]=useState('All'),[selectedCompanyId,SelectCompany]=useState('northstar'),[selectedProductId,SelectProduct]=useState('nova-book-pro'),[contentType,SetContentType]=useState('Script / ad copy'),[submissions,SetSubmissions]=useState(sampleSubmissions),[selectedSubmissionId,SelectSubmission]=useState('INK-024'),[selectedMySubmissionId,SelectMySubmission]=useState('INK-021'),[reviewComment,SetReviewComment]=useState(''),[editingSubmissionId,SetEditingSubmissionId]=useState(null),[approvalFilter,SetApprovalFilter]=useState('Pending'),[workspaceName,SetWorkspaceName]=useState('Acme Enterprise Solutions'),[workspaceMenuOpen,SetWorkspaceMenuOpen]=useState(false),[profileName,SetProfileName]=useState(''),[profileEmail,SetProfileEmail]=useState(''),[strictTermBlocking,SetStrictTermBlocking]=useState(true),[reviewAlerts,SetReviewAlerts]=useState(true),[decisionAlerts,SetDecisionAlerts]=useState(true),[revisionAlerts,SetRevisionAlerts]=useState(true);
  const notify=x=>{T(x);setTimeout(()=>T(''),2600)};
  const decide=(id,decision)=>{F(a=>a.map(f=>f.id===id?{...f,state:decision}:f));D(a=>[{id,decision,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...a]);notify('Finding decision updated in this prototype session.');};
  const timeLabel=()=>new Date().toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -132,6 +140,7 @@ export default function App(){
  const selected=findings.find(f=>f.id===picked)||findings[0];
  const pillTone=state=>state==='Approved'?'green':state==='Rejected'?'rejected':state==='Changes requested'?'blue':state==='Resubmitted for review'?'purple':'amber';
  const roleInfo=roleOptions.find(item=>item.id===role)||roleOptions[0];
+ const activeWorkspace=demoWorkspaces.find(item=>item.name===workspaceName)||demoWorkspaces[0];
  const navItems=navigationByRole[role]||navigationByRole.creator;
  const selectedCompany=demoCompanies.find(company=>company.id===selectedCompanyId)||demoCompanies[0];
  const selectedProduct=demoProducts.find(product=>product.id===selectedProductId)||demoProducts[0];
